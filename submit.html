@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+  <meta charset="UTF-8">
+  <title>논술 답안 제출</title>
+  <style>
+    body { font-family: sans-serif; padding: 20px; max-width: 700px; margin: auto; }
+    input, textarea { width: 100%; padding: 10px; margin-bottom: 15px; font-size: 16px; box-sizing: border-box; }
+    button { padding: 10px 20px; font-size: 16px; cursor: pointer; }
+    .char-count { text-align: right; font-size: 14px; color: #555; margin-top: -10px; margin-bottom: 15px; }
+  </style>
+  <script>
+    function preventPaste(event) {
+      event.preventDefault();
+      alert("붙여넣기는 사용할 수 없습니다. 직접 입력해주세요.");
+    }
+
+    function updateCharCount() {
+      const textarea = document.getElementById("answer");
+      const countDisplay = document.getElementById("charCount");
+      countDisplay.textContent = `현재 글자 수: ${textarea.value.length}자`;
+    }
+
+    function submitForm() {
+      const studentId = document.getElementById('studentId').value.trim();
+      const studentName = document.getElementById('studentName').value.trim();
+      const answer = document.getElementById('answer').value.trim();
+
+      if (!studentId || !studentName || !answer) {
+        alert('모든 항목을 작성해주세요.');
+        return;
+      }
+
+      const scriptURL = 'https://script.google.com/macros/s/AKfycbwsCgRNlhaP3j5AN7wDnaafB74_iGlQQoI4caD0aku0sGZizFMRDb4WFDMY_Davj-W3Jw/exec';
+
+      fetch(scriptURL, {
+        method: 'POST',
+        mode: 'no-cors',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ studentId, studentName, answer })
+      }).then(() => {
+        alert('제출되었습니다!');
+        document.getElementById('studentId').value = '';
+        document.getElementById('studentName').value = '';
+        document.getElementById('answer').value = '';
+        updateCharCount();
+      }).catch(err => {
+        alert('제출에 실패했습니다.');
+        console.error(err);
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+      document.getElementById("answer").addEventListener("paste", preventPaste);
+      document.addEventListener("keydown", event => {
+        if (event.ctrlKey && (event.key === "v" || event.key === "V")) {
+          event.preventDefault();
+          alert("Ctrl+V는 사용할 수 없습니다. 직접 입력해주세요.");
+        }
+      });
+      document.addEventListener("contextmenu", event => event.preventDefault());
+      updateCharCount();
+    });
+  </script>
+</head>
+<body>
+  <h2>📝 논술 답안 제출</h2>
+
+  <label for="studentId">1. 학번</label>
+  <input type="text" id="studentId" name="studentId" required>
+
+  <label for="studentName">2. 이름</label>
+  <input type="text" id="studentName" name="studentName" required>
+
+  <label for="answer">3. 아래 논술 문제에 답하세요:</label>
+  <p><strong>
+    1. 김홍도와 신윤복의 작품의 차이를 서술하시오.<br>
+    2. asdfsaf<br>
+    3. asdfsdf<br>
+    4. saf<br>
+    5. asdfasdf
+  </strong></p>
+
+  <textarea id="answer" name="answer" rows="10" required oninput="updateCharCount()"></textarea>
+  <div class="char-count" id="charCount">현재 글자 수: 0자</div>
+
+  <button onclick="submitForm()">제출</button>
+</body>
+</html>
